@@ -150,13 +150,6 @@ if __name__ == "__main__":
   # test_home_move()
   # test_linear_move()
   # test_rotation_move()
-  test_free_drive()
+  # test_free_drive()
   # test_joint_angles_move()
   # test_jog_move()
-
-
-  # mc.set_gripper_state(1, 80)
-  # while True:
-  #     mc.send_coords([-47.0 + 30, -263.7, 0.6 + 20, 172.46, 5.51, 130.82], SPEED, MODE)
-  #     time.sleep(0.02)
-  #     mc.send_coords([-47.0 - 30, -263.7, 0.6 - 20, 172.46, 5.51, 130.82], SPEED, MODE)
