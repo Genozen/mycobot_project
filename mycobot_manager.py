@@ -20,7 +20,7 @@ class MyCobotManager:
 
         # Initialize MyCobot280
         self.mc = MyCobot280(PI_PORT, PI_BAUD)
-        self.SPEED = 90 # 1 ~100
+        self.SPEED = 100 # 1 ~100
         self.MODE = 1
 
         # more responsive in refresh mode

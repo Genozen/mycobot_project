@@ -20,20 +20,20 @@ def test_mycobot():
     time.sleep(0.3)
     mycobot.gripper_close()
     time.sleep(0.3)
-    mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
-    time.sleep(0.3)
-    mycobot.move_to_pose(mycobot.HUMAN_DETECT_POSE)
-    time.sleep(0.3)
-    mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
-    time.sleep(0.3)
+    # mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
+    # time.sleep(0.3)
+    # mycobot.move_to_pose(mycobot.HUMAN_DETECT_POSE)
+    # time.sleep(0.3)
+    # mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
+    # time.sleep(0.3)
 
-    while True:
-        new_pose = mycobot.current_pose.copy()
-        new_pose[0] += INCREMENT
-        print("move right: ", new_pose)
-        mycobot.move_to_pose(new_pose)
-        print("current pose: ", mycobot.current_pose)
-        time.sleep(0.3)
+    # while True:
+    #     new_pose = mycobot.current_pose.copy()
+    #     new_pose[0] += INCREMENT
+    #     print("move right: ", new_pose)
+    #     mycobot.move_to_pose(new_pose)
+    #     print("current pose: ", mycobot.current_pose)
+    #     time.sleep(0.3)
 
 def test_ducky_detector():
     ducky_detector = DuckyDetector()
@@ -79,10 +79,19 @@ def main():
                 print("robot dist:", robot_dist_y)
                 # new_pose = mycobot.current_pose.copy()
                 new_pose[1] -= robot_dist_y
-                new_pose[2] = 118.0
+                new_pose[2] = 140.0
                 print("move to: ", new_pose)
                 mycobot.move_to_pose(new_pose)
+                # time.sleep(3.0)
 
+                mycobot.gripper_close()
+                # time.sleep(1.0)
+                mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
+                # time.sleep(3.0)
+                mycobot.move_to_pose(new_pose)
+                # time.sleep(3.0)
+                mycobot.gripper_open()
+                # time.sleep(1.0)
 
                 # if ducky is to the right of the center, move arm to the right
                 # if ducky_x > DUCK_CENTER[0] + DISTANCE_THRESHOLD:
