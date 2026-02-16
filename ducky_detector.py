@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import threading
 
 # preset cv2 windows
 font = cv2.FONT_HERSHEY_SIMPLEX
@@ -47,16 +48,38 @@ class DuckyDetector:
         self.ducky_y = None
         self.ducky_size = None
 
-    def run(self):
-        while True:
+        # thread control
+        self.running = False
+        self.thread = None
+        
+        # Store latest frames for display (accessed from main thread)
+        self.latest_frame = None
+        self.latest_hsv = None
+        self.latest_mask = None
+        self.frame_lock = threading.Lock()
+
+    def start(self):
+        """Start the detector in a separate thread"""
+        if not self.running:
+            self.running = True
+            self.thread = threading.Thread(target=self._run_loop, daemon=True)
+            self.thread.start()
+
+    def stop(self):
+        """Stop the detector thread"""
+        self.running = False
+        if self.thread:
+            self.thread.join()
+        self.cam.release()
+        cv2.destroyAllWindows()
+
+    def _run_loop(self):
+        """Internal loop that runs in the thread"""
+        while self.running:
             ret, frame = self.cam.read()
             if not ret:
                 break
             self._detect(frame)
-            if cv2.waitKey(10) & 0xFF == ord("q"):
-                break
-        self.cam.release()
-        cv2.destroyAllWindows()
 
     def _detect(self, frame):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -67,7 +90,6 @@ class DuckyDetector:
 
         keypoints = self.detector.detect(reversemask)
         blobCount = len(keypoints)
-
         
         if blobCount > 0:
             self.ducky_x = keypoints[0].pt[0]
@@ -78,8 +100,8 @@ class DuckyDetector:
             self.ducky_y = None
             self.ducky_size = None
 
+        # Draw annotations on frame
         if blobCount > 0:
-            # draw on cv window
             text = "Count=" + str(blobCount) 
             cv2.putText(frame, text, (5,25), font, 1, (0, 255, 0), 2)
             text2 = "X=" + "{:.2f}".format(self.ducky_x )
@@ -90,9 +112,21 @@ class DuckyDetector:
             cv2.putText(frame, text4, (5,100), font, 1, (0, 255, 0), 2)
             cv2.circle(frame, (int(self.ducky_x),int(self.ducky_y)), int(self.ducky_size / 2), (0, 255, 0), 2) 
 
-        cv2.imshow("frame", frame)
-        cv2.imshow("hsv", hsv)
-        cv2.imshow("mask", mask)
+        # Store frames for main thread to display
+        with self.frame_lock:
+            self.latest_frame = frame.copy()
+            self.latest_hsv = hsv.copy()
+            self.latest_mask = mask.copy()
+
+    def display_frames(self):
+        """Call this from the main thread to display frames"""
+        with self.frame_lock:
+            if self.latest_frame is not None:
+                cv2.imshow("frame", self.latest_frame)
+                cv2.imshow("hsv", self.latest_hsv)
+                cv2.imshow("mask", self.latest_mask)
+
+
 
     def get_ducky_position(self):
         return self.ducky_x, self.ducky_y
