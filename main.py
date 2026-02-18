@@ -130,10 +130,10 @@ def main():
 
                     dist_x = abs(face_x - (FACE_CENTER[0] + CENTER_SHIFT + CENTER_THRESHOLD))
                     if face_x > FACE_CENTER[0] + CENTER_SHIFT + CENTER_THRESHOLD:
-                        mycobot.mc.jog_increment_angle(joint_id=1, increment=-dist_x / 7, speed=100, _async=True)
+                        mycobot.mc.jog_increment_angle(joint_id=1, increment=-dist_x / 10, speed=100, _async=True)
                         print("moving right")
                     elif face_x < FACE_CENTER[0] + CENTER_SHIFT - CENTER_THRESHOLD:
-                        mycobot.mc.jog_increment_angle(joint_id=1, increment=dist_x / 7, speed=100, _async=True)
+                        mycobot.mc.jog_increment_angle(joint_id=1, increment=dist_x / 10, speed=100, _async=True)
                         print("moving left")
 
                     dist_y = abs(face_y - (FACE_CENTER[1] + CENTER_THRESHOLD))
