@@ -20,20 +20,12 @@ def test_mycobot():
     time.sleep(0.3)
     mycobot.gripper_close()
     time.sleep(0.3)
-    # mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
-    # time.sleep(0.3)
-    # mycobot.move_to_pose(mycobot.HUMAN_DETECT_POSE)
-    # time.sleep(0.3)
-    # mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
-    # time.sleep(0.3)
-
-    # while True:
-    #     new_pose = mycobot.current_pose.copy()
-    #     new_pose[0] += INCREMENT
-    #     print("move right: ", new_pose)
-    #     mycobot.move_to_pose(new_pose)
-    #     print("current pose: ", mycobot.current_pose)
-    #     time.sleep(0.3)
+    mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
+    time.sleep(0.3)
+    mycobot.move_to_pose(mycobot.HUMAN_DETECT_POSE)
+    time.sleep(0.3)
+    mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
+    time.sleep(0.3)
 
 def test_ducky_detector():
     ducky_detector = DuckyDetector()
@@ -61,17 +53,12 @@ def main():
             if ducky_x is not None and ducky_y is not None:
                 print(f"Ducky at: ({ducky_x:.2f}, {ducky_y:.2f})")
 
-
                 pix_dist_x = ducky_x - DUCK_CENTER[0]
                 robot_dist_x = pix_dist_x * PIXEL_TO_MM_RATIO
                 print("pix dist:", pix_dist_x)
                 print("robot dist:", robot_dist_x)
                 new_pose = mycobot.current_pose.copy()
                 new_pose[0] += robot_dist_x
-                # new_pose[2] = 114.0
-                # print("move to: ", new_pose)
-                # mycobot.move_to_pose(new_pose)
-                # print("current pose: ", mycobot.current_pose)
 
                 pix_dist_y = ducky_y - DUCK_CENTER[1]
                 robot_dist_y = pix_dist_y * PIXEL_TO_MM_RATIO
@@ -94,40 +81,6 @@ def main():
                 mycobot.move_to_pose(new_pose)
                 mycobot.gripper_open()
 
-
-                # if ducky is to the right of the center, move arm to the right
-                # if ducky_x > DUCK_CENTER[0] + DISTANCE_THRESHOLD:
-                #     print("pix dist:", ducky_x - DUCK_CENTER[0])
-                #     new_pose = mycobot.current_pose.copy()
-                #     new_pose[0] += INCREMENT
-                #     print("move right: ", new_pose)
-                #     # mycobot.move_to_pose(new_pose)
-                #     # print("current pose: ", mycobot.current_pose)
-                #     # temp_total_increment += INCREMENT
-                # elif ducky_x < DUCK_CENTER[0] - DISTANCE_THRESHOLD:
-                #     new_pose = mycobot.current_pose.copy()
-                #     new_pose[0] -= INCREMENT
-                #     print("move left: ", new_pose)
-                #     # mycobot.move_to_pose(new_pose)
-                #     # print("current pose: ", mycobot.current_pose)
-
-
-                # if ducky is to the right of the center, move arm to the right
-                # if ducky_y > DUCK_CENTER[1] + DISTANCE_THRESHOLD:
-                #     new_pose = mycobot.current_pose.copy()
-                #     new_pose[1] -= INCREMENT
-                #     print("move down: ", new_pose)
-                #     mycobot.move_to_pose(new_pose)
-                #     print("current pose: ", mycobot.current_pose)
-                # elif ducky_y < DUCK_CENTER[1] - DISTANCE_THRESHOLD:
-                #     new_pose = mycobot.current_pose.copy()
-                #     new_pose[1] += INCREMENT
-                #     print("move up: ", new_pose)
-                #     mycobot.move_to_pose(new_pose)
-                #     print("current pose: ", mycobot.current_pose)
-
-
-
             # cv2.waitKey MUST be called from main thread for GUI to update
             if cv2.waitKey(10) & 0xFF == ord("q"):
                 break
@@ -138,10 +91,22 @@ def main():
         ducky_detector.stop()
 
 if __name__ == "__main__":
-    main()
-    # test_mycobot()
-    # test_camera()
-    # test_ducky_detector()
+    print("""
+    1. main()
+    2. test_mycobot()
+    3. test_ducky_detector()
+    """)
+
+    # python 3.8 don't have switch/match case statement
+    user_input = input("Enter the test number:")
+    if user_input == "1":
+        main()
+    elif user_input == "2":
+        test_mycobot()
+    elif user_input == "3":
+        test_ducky_detector()
+    else:
+        print("Invalid input")
 
 
 """

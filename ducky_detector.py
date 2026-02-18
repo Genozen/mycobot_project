@@ -36,7 +36,6 @@ class DuckyDetector:
         self.params.minInertiaRatio = 0.5
         self.detector = cv2.SimpleBlobDetector_create(self.params)
 
-
         self.CAM_IDX = 0
         # connect camera stream
         self.cam = cv2.VideoCapture(self.CAM_IDX)
