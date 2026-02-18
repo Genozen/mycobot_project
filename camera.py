@@ -1,13 +1,14 @@
 import cv2
 
-
 class Camera:
     """Single source for camera images. Feed frames to ducky_detector or face_detector."""
 
     def __init__(self, width=640, height=480, device_id=0):
         self.width = int(width)
         self.height = int(height)
+
         self._cap = cv2.VideoCapture(device_id)
+        self._cap.set(cv2.CAP_PROP_BUFFERSIZE, 1) # reduce buffer size to reduce latency
         if not self._cap.isOpened():
             raise RuntimeError(f"Camera {device_id} could not be opened")
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
@@ -28,7 +29,7 @@ class Camera:
             self._cap = None
 
 if __name__ == "__main__":
-    camera = Camera(320, 240)
+    camera = Camera(640, 480)
     while True:
         if camera.is_opened():
             ret, frame = camera.read()
