@@ -145,11 +145,11 @@ def test_jog_move():
 if __name__ == "__main__":
 
   # mc.send_coords(CAM_POSE, SPEED, MODE)
-  print(mc.get_coords())
-  print(mc.get_angles())
+  # print(mc.get_coords())
+  # print(mc.get_angles())
   # test_home_move()
   # test_linear_move()
   # test_rotation_move()
-  # test_free_drive()
+  test_free_drive()
   # test_joint_angles_move()
   # test_jog_move()
