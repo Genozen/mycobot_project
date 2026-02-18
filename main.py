@@ -77,21 +77,23 @@ def main():
                 robot_dist_y = pix_dist_y * PIXEL_TO_MM_RATIO
                 print("pix dist:", pix_dist_y)
                 print("robot dist:", robot_dist_y)
-                # new_pose = mycobot.current_pose.copy()
                 new_pose[1] -= robot_dist_y
                 new_pose[2] = 140.0
                 print("move to: ", new_pose)
                 mycobot.move_to_pose(new_pose)
-                # time.sleep(3.0)
-
                 mycobot.gripper_close()
-                # time.sleep(1.0)
+
+                # move upwards to prevent diagonal movement which drops the ducky
+                above_ducky_pose = new_pose.copy()
+                above_ducky_pose[2] += 50
+                mycobot.move_to_pose(above_ducky_pose)
+                time.sleep(1.0)
+
                 mycobot.move_to_pose(mycobot.DUCK_DETECT_POSE)
-                # time.sleep(3.0)
+                mycobot.move_to_pose(above_ducky_pose)
                 mycobot.move_to_pose(new_pose)
-                # time.sleep(3.0)
                 mycobot.gripper_open()
-                # time.sleep(1.0)
+
 
                 # if ducky is to the right of the center, move arm to the right
                 # if ducky_x > DUCK_CENTER[0] + DISTANCE_THRESHOLD:
