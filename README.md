@@ -1,6 +1,9 @@
 ## Full Project Demo:
 https://youtu.be/Jq-79XXTvu4
 
+this project won't be actively maintained due to time commitments, but I will try to fix issues if you request them.
+
+
 ## More API documentation:
 https://docs.elephantrobotics.com/docs/mycobot_280_pi_en/3-FunctionsAndApplications/6.developmentGuide/python/2_API.html?h=set_vision
 https://github.dev/elephantrobotics/pymycobot
