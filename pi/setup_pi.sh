@@ -11,17 +11,20 @@ pip install pymycobot --upgrade
 
 # Install mjpg-streamer dependencies
 echo "[2/4] Installing mjpg-streamer dependencies..."
-sudo apt-get update
+# Allow apt-get update to continue past stale third-party repo GPG keys
+# (e.g. expired ROS keys, missing GitHub CLI keys on factory image)
+sudo apt-get update || echo "  Warning: apt-get update had errors (likely stale GPG keys). Continuing..."
 sudo apt-get install -y cmake libjpeg-dev gcc g++ git
 
 # Build and install mjpg-streamer
 if ! command -v mjpg_streamer &> /dev/null; then
     echo "[3/4] Building mjpg-streamer from source..."
     cd /tmp
-    git clone https://github.com/350d/mjpg-streamer.git
+    rm -rf /tmp/mjpg-streamer
+    git clone https://github.com/jacksonliam/mjpg-streamer.git
     cd mjpg-streamer/mjpg-streamer-experimental
     mkdir -p _build && cd _build
-    cmake ..
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ..
     make
     sudo make install
     cd ~
