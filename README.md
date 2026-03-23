@@ -30,7 +30,7 @@ Desktop PC (Ubuntu 22.04 / ROS 2 Humble)         myCobot 280 Pi (Ubuntu 20.04)
 ```
 mycobot_project/               # <-- this is the ROS 2 workspace root
 ├── src/
-│   ├── mycobot_description/   # URDF, meshes, RViz config
+│   ├── mycobot_description/   # URDF (arm + camera + gripper), meshes, RViz config
 │   ├── mycobot_driver/        # Arm + gripper control + pose recorder
 │   ├── mycobot_camera/        # Camera stream consumer (MJPEG -> ROS 2 Image)
 │   ├── mycobot_moveit_config/ # MoveIt2 planning config (SRDF, kinematics, OMPL)

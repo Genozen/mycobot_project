@@ -13,13 +13,13 @@ obstacles:
   - name: table
     type: box
     dimensions: [1.0, 1.0, 0.02]    # [x, y, z] size in meters
-    position: [0.0, 0.0, -0.32]     # surface ~45cm below mount point
+    position: [0.0, 0.0, -0.415]     # surface ~45cm below mount point
     orientation: [0.0, 0.0, 0.0]    # [roll, pitch, yaw] in radians
 
   - name: shelf
     type: box
     dimensions: [0.02, 1.0, 0.02]
-    position: [0.0, -0.05, 0.04]     # 25cm behind the robot
+    position: [0.0, -0.04, 0.04]     # 25cm behind the robot
     orientation: [0.0, 0.0, 1.5708]
 
   - name: wall

@@ -2,6 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mycobot_280pi">
 
   <xacro:property name="mesh_path" value="package://mycobot_description/meshes"/>
+  <xacro:property name="gripper_mesh" value="package://mycobot_description/meshes/adaptive_gripper"/>
 
   <!-- Dummy inertial macro (required for Gazebo/MoveIt2) -->
   <xacro:macro name="default_inertial" params="mass:=0.1">
@@ -13,6 +14,8 @@
 
   <!-- Set to true when the robot is physically mounted upside-down -->
   <xacro:arg name="flipped" default="true"/>
+  <!-- Set to false to hide the gripper mesh for debugging -->
+  <xacro:arg name="show_gripper" default="true"/>
 
   <!-- ==================== Links ==================== -->
 
@@ -157,6 +160,143 @@
     <xacro:default_inertial mass="0.05"/>
   </link>
 
+  <!-- ==================== Camera Flange ==================== -->
+
+  <link name="camera_flange">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/camera_flange.dae"/>
+      </geometry>
+      <origin xyz="0.024 -0.008 0.0" rpy="0 3.14159 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.04 0.04 0.03"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.015" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.03"/>
+  </link>
+
+  <link name="camera_link"/>
+
+  <!-- ==================== Adaptive Gripper ==================== -->
+  <xacro:if value="$(arg show_gripper)">
+
+  <link name="gripper_base">
+    <visual>
+      <geometry>
+        <mesh filename="${gripper_mesh}/gripper_base.dae"/>
+      </geometry>
+      <origin xyz="0.0 0 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.06 0.02 0.025"/>
+      </geometry>
+      <origin xyz="0.0 0.01 0.0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.05"/>
+  </link>
+
+  <link name="gripper_left1">
+    <visual>
+      <geometry>
+        <mesh filename="${gripper_mesh}/gripper_left1.dae"/>
+      </geometry>
+      <origin xyz="0.039 -0.0133 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.015 0.04 0.01"/>
+      </geometry>
+      <origin xyz="0.02 0.0 0.0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.01"/>
+  </link>
+
+  <link name="gripper_left2">
+    <visual>
+      <geometry>
+        <mesh filename="${gripper_mesh}/gripper_left2.dae"/>
+      </geometry>
+      <origin xyz="0.005 -0.0195 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.015 0.03 0.01"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.01"/>
+  </link>
+
+  <link name="gripper_left3">
+    <visual>
+      <geometry>
+        <mesh filename="${gripper_mesh}/gripper_left3.dae"/>
+      </geometry>
+      <origin xyz="0.012 0.0025 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.015 0.02 0.01"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.01"/>
+  </link>
+
+  <link name="gripper_right1">
+    <visual>
+      <geometry>
+        <mesh filename="${gripper_mesh}/gripper_right1.dae"/>
+      </geometry>
+      <origin xyz="-0.039 -0.0133 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.015 0.04 0.01"/>
+      </geometry>
+      <origin xyz="-0.02 0.0 0.0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.01"/>
+  </link>
+
+  <link name="gripper_right2">
+    <visual>
+      <geometry>
+        <mesh filename="${gripper_mesh}/gripper_right2.dae"/>
+      </geometry>
+      <origin xyz="-0.005 -0.0195 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.015 0.03 0.01"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.01"/>
+  </link>
+
+  <link name="gripper_right3">
+    <visual>
+      <geometry>
+        <mesh filename="${gripper_mesh}/gripper_right3.dae"/>
+      </geometry>
+      <origin xyz="-0.012 0.0025 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.015 0.02 0.01"/>
+      </geometry>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.01"/>
+  </link>
+
+  </xacro:if>
+
   <!-- ==================== Joints ==================== -->
 
   <joint name="virtual_joint" type="fixed">
@@ -212,5 +352,67 @@
     <child link="link6_flange"/>
     <origin xyz="0 0.0456 0" rpy="-1.5708 0 0"/>
   </joint>
+
+  <!-- Camera flange bracket attaches to the arm flange (rotated 45° CCW) -->
+  <joint name="flange_to_camera_flange" type="fixed">
+    <parent link="link6_flange"/>
+    <child link="camera_flange"/>
+    <origin xyz="0 0 0.01" rpy="1.579 0 -0.7854"/>
+  </joint>
+
+  <!-- Camera optical frame on the camera flange bracket -->
+  <joint name="camera_flange_to_camera" type="fixed">
+    <parent link="camera_flange"/>
+    <child link="camera_link"/>
+    <origin xyz="0.03 0 0.04" rpy="0 1.5708 0"/>
+  </joint>
+
+  <xacro:if value="$(arg show_gripper)">
+
+  <!-- Gripper base stacked after camera along +Y, rotated 90° CW -->
+  <joint name="camera_flange_to_gripper" type="fixed">
+    <parent link="camera_flange"/>
+    <child link="gripper_base"/>
+    <origin xyz="0 0.065 0" rpy="0 -1.5708 0"/>
+  </joint>
+
+  <!-- Gripper finger joints (fixed — visual only, controlled via pymycobot) -->
+  <joint name="gripper_controller" type="fixed">
+    <parent link="gripper_base"/>
+    <child link="gripper_left3"/>
+    <origin xyz="-0.012 0.005 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="gripper_base_to_gripper_left2" type="fixed">
+    <parent link="gripper_base"/>
+    <child link="gripper_left2"/>
+    <origin xyz="-0.005 0.027 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="gripper_left3_to_gripper_left1" type="fixed">
+    <parent link="gripper_left3"/>
+    <child link="gripper_left1"/>
+    <origin xyz="-0.027 0.016 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="gripper_base_to_gripper_right3" type="fixed">
+    <parent link="gripper_base"/>
+    <child link="gripper_right3"/>
+    <origin xyz="0.012 0.005 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="gripper_base_to_gripper_right2" type="fixed">
+    <parent link="gripper_base"/>
+    <child link="gripper_right2"/>
+    <origin xyz="0.005 0.027 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="gripper_right3_to_gripper_right1" type="fixed">
+    <parent link="gripper_right3"/>
+    <child link="gripper_right1"/>
+    <origin xyz="0.027 0.016 0" rpy="0 0 0"/>
+  </joint>
+
+  </xacro:if>
 
 </robot>
