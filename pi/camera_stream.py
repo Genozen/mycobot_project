@@ -40,7 +40,8 @@ class MJPEGStreamHandler(BaseHTTPRequestHandler):
                     self.wfile.write(b'\r\n')
                     self.wfile.write(data)
                     self.wfile.write(b'\r\n')
-                    time.sleep(0.033)  # ~30 FPS
+                    self.wfile.flush()
+                    time.sleep(0.1)  # ~10 FPS (safe for Pi 2GB over WiFi)
             except (BrokenPipeError, ConnectionResetError):
                 pass
         elif self.path == '/?action=snapshot':
