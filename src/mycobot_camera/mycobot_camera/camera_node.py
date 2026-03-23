@@ -18,7 +18,7 @@ class CameraNode(Node):
     def __init__(self):
         super().__init__('camera_node')
 
-        self.declare_parameter('camera_url', 'http://192.168.1.160:8080/?action=stream')
+        self.declare_parameter('camera_url', 'http://192.168.1.169:8080/?action=stream')
         self.declare_parameter('frame_rate', 30.0)
         self.declare_parameter('frame_id', 'camera_link')
 
@@ -37,7 +37,7 @@ class CameraNode(Node):
             self.get_logger().error(f'Failed to open camera stream at {url}')
             self.get_logger().error(
                 'Make sure mjpg-streamer is running on the Pi: '
-                'ssh er@192.168.1.160 "bash ~/mycobot_setup/start_services.sh"'
+                'ssh er@192.168.1.169 "bash ~/Documents/robotics_club/mycobot_setup/start_services.sh"'
             )
         else:
             self.get_logger().info('Camera stream connected')

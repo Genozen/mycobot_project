@@ -21,7 +21,7 @@ class GripperNode(Node):
     def __init__(self):
         super().__init__('gripper_node')
 
-        self.declare_parameter('robot_ip', '192.168.1.160')
+        self.declare_parameter('robot_ip', '192.168.1.169')
         self.declare_parameter('robot_port', 9000)
         self.declare_parameter('gripper_speed', 80)
         self.declare_parameter('publish_rate', 5.0)

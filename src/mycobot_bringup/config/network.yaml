@@ -1,4 +1,4 @@
 # myCobot 280 Pi network configuration
-robot_ip: "192.168.1.160"
+robot_ip: "192.168.1.169"
 robot_port: 9000
 camera_port: 8080

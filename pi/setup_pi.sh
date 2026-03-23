@@ -50,5 +50,5 @@ sudo systemctl enable mjpg_streamer.service
 
 echo ""
 echo "=== Setup complete ==="
-echo "Start services with: bash ~/mycobot_setup/start_services.sh"
+echo "Start services with: bash ~/Documents/robotics_club/mycobot_setup/start_services.sh"
 echo "Or reboot and they will start automatically."

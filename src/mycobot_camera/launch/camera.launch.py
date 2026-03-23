@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     camera_url_arg = DeclareLaunchArgument(
         'camera_url',
-        default_value='http://192.168.1.160:8080/?action=stream',
+        default_value='http://192.168.1.169:8080/?action=stream',
         description='MJPEG stream URL from mjpg-streamer on the Pi',
     )
 

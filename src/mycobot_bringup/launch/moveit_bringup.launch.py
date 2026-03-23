@@ -5,7 +5,7 @@ Launches: driver + gripper + camera + robot_state_publisher + MoveIt2 move_group
 
 Usage:
   ros2 launch mycobot_bringup moveit_bringup.launch.py
-  ros2 launch mycobot_bringup moveit_bringup.launch.py robot_ip:=192.168.1.160
+  ros2 launch mycobot_bringup moveit_bringup.launch.py robot_ip:=192.168.1.169
 """
 
 import os
@@ -18,7 +18,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    robot_ip_arg = DeclareLaunchArgument('robot_ip', default_value='192.168.1.160')
+    robot_ip_arg = DeclareLaunchArgument('robot_ip', default_value='192.168.1.169')
     robot_port_arg = DeclareLaunchArgument('robot_port', default_value='9000')
 
     robot_ip = LaunchConfiguration('robot_ip')

@@ -48,7 +48,7 @@ mycobot_project/               # <-- this is the ROS 2 workspace root
 ### myCobot 280 Pi
 - Factory image (Ubuntu 20.04) -- no changes required
 - Connected to the same network as the Desktop
-- Default IP: `192.168.1.160`, user: <>, password: <>
+- Default IP: `192.168.1.169`, user: <>, password: <>
 
 ## Quick Start
 
@@ -56,15 +56,15 @@ mycobot_project/               # <-- this is the ROS 2 workspace root
 
 ```bash
 # From the Desktop, copy setup scripts to the Pi and run them
-scp -r pi/ er@192.168.1.160:~/mycobot_setup/
-ssh er@192.168.1.160 'bash ~/mycobot_setup/setup_pi.sh'
+scp -r pi/ er@192.168.1.169:~/Documents/robotics_club/mycobot_setup/
+ssh er@192.168.1.169 'bash ~/Documents/robotics_club/mycobot_setup/setup_pi.sh'
 ```
 
 ### 2. Start Pi services
 
 ```bash
-ssh er@192.168.1.160 'bash ~/mycobot_setup/start_services.sh'
-# Verify camera: open http://192.168.1.160:8080/?action=stream in a browser
+ssh er@192.168.1.169 'bash ~/Documents/robotics_club/mycobot_setup/start_services.sh'
+# Verify camera: open http://192.168.1.169:8080/?action=stream in a browser
 ```
 
 ### 3. Build and run (Desktop)
@@ -79,7 +79,7 @@ source install/setup.bash
 ros2 launch mycobot_description display.launch.py
 
 # Connect to robot (driver + gripper + camera)
-ros2 launch mycobot_bringup robot_bringup.launch.py robot_ip:=192.168.1.160
+ros2 launch mycobot_bringup robot_bringup.launch.py robot_ip:=192.168.1.169
 
 # Full MoveIt2 stack
 ros2 launch mycobot_bringup moveit_bringup.launch.py

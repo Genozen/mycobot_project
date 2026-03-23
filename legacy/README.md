@@ -51,7 +51,7 @@ xpra start :99 --start=xterm
 export DISPLAY=:99
 
 # On host
-xpra attach ssh://er@192.168.1.160/99
+xpra attach ssh://er@192.168.1.169/99
 ```
 
 ### Speed up Raspi with swap
@@ -71,7 +71,7 @@ sudo swapoff /swapfile
 ### X11 forwarding
 
 ```bash
-ssh -Y er@192.168.1.160
+ssh -Y er@192.168.1.169
 # If not working, on the Pi:
 # sudo nano /etc/ssh/sshd_config -> set X11Forwarding yes
 # sudo systemctl restart ssh
