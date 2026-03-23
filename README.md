@@ -1,78 +1,101 @@
-# mycobot_project (Legacy Reference Scripts)
+# myCobot 280 Pi -- ROS 2 Workspace
 
-Original pymycobot scripts that run directly on the myCobot 280 Pi via serial.
-These are preserved as reference for the ROS 2 migration.
+Remote-control a myCobot 280 Pi over the network from a Desktop PC using ROS 2 Humble and MoveIt2.
 
-Full project demo: https://youtu.be/Jq-79XXTvu4
+## Architecture
 
-## Migration Map
+The Pi runs two lightweight servers (no ROS 2 needed). All ROS 2 nodes run on the Desktop.
 
-These scripts are being migrated into ROS 2 packages in `src/`:
-
-| Legacy Script | Migrated To | Status |
-|---------------|-------------|--------|
-| `mycobot_manager.py` | `mycobot_driver/mycobot_hardware_node.py` | Planned |
-| `camera.py` | `mycobot_camera/camera_node.py` | Planned |
-| `ducky_detector.py` | Future: ROS 2 perception node | Planned |
-| `face_detector.py` | Future: ROS 2 perception node | Planned |
-| `pick_and_place.py` | Future: MoveIt2 pick-and-place pipeline | Planned |
-| `main.py` | Future: ROS 2 application node | Planned |
-| `mycobot280_face_track_test.py` | Future: ROS 2 face tracking node | Planned |
-| `blob_detect.py` | Reference only (HSV tuning utility) | -- |
-| `hsv_tuning.py` | Reference only (HSV tuning utility) | -- |
-| `draw_heart.py` | Reference only (demo script) | -- |
-| `mediapipe_face_detect.py` | Merged into `face_detector.py` | -- |
-
-## Key Constants (carry forward into ROS 2)
-
-From `mycobot_manager.py`:
-- `DUCK_DETECT_POSE = [115.5, -56.2, 284.6, -178.73, -4.05, -39.3]` (coords)
-- `HUMAN_DETECT_POSE = [86.6, -121.2, 389.9, -80.09, 42.7, -105.22]` (coords)
-- Refresh mode: `set_fresh_mode(1)` for responsive movement
-- Gripper speed: 80
-
-From `main.py`:
-- `PIXEL_TO_MM_RATIO = 0.497` (camera calibration)
-- `DUCK_CENTER = (230, 230)` (pixel coordinates)
-
-## API Documentation
-
-- https://docs.elephantrobotics.com/docs/mycobot_280_pi_en/3-FunctionsAndApplications/6.developmentGuide/python/2_API.html
-- https://github.dev/elephantrobotics/pymycobot (look for `generate.py`, `mycobot.py`)
-
-## Pi Tips (from original development)
-
-### Xpra display forwarding (superseded by mjpg-streamer in the ROS 2 workspace)
-
-```bash
-# On raspi
-sudo apt-get update && sudo apt-get install xpra
-xpra start :99 --start=xterm
-export DISPLAY=:99
-
-# On host
-xpra attach ssh://er@192.168.1.160/99
+```
+Desktop PC (Ubuntu 22.04 / ROS 2 Humble)         myCobot 280 Pi (Ubuntu 20.04)
+┌──────────────────────────────────────┐         ┌─────────────────────────────┐
+│  MoveIt2 Planning                    │         │  pymycobot Server.py :9000  │
+│  mycobot_driver ──── TCP :9000 ──────┼────────►│    └── /dev/ttyAMA0 ──► Arm │
+│    ├── /joint_states                 │         │                             │
+│    ├── /follow_joint_trajectory      │         │  mjpg-streamer :8080        │
+│    └── /gripper services             │         │    └── /dev/video0 ──► Cam  │
+│  mycobot_camera ─── HTTP :8080 ──────┼────────►│                             │
+│    └── /camera/image_raw             │         └─────────────────────────────┘
+│  robot_state_publisher               │
+│  RViz2                               │
+└──────────────────────────────────────┘
 ```
 
-### Speed up Raspi with swap
+## Repository Layout
 
-```bash
-free -h
-sudo dd if=/dev/zero of=/swapfile bs=1024 count=4194304  # 4GB
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-free -h
-
-# To turn off
-sudo swapoff /swapfile
+```
+mycobot_project/               # <-- this is the ROS 2 workspace root
+├── src/
+│   ├── mycobot_description/    # URDF, meshes, RViz config
+│   ├── mycobot_driver/         # Arm + gripper control via pymycobot TCP
+│   ├── mycobot_camera/         # Camera stream consumer (MJPEG -> ROS 2)
+│   ├── mycobot_moveit_config/  # MoveIt2 planning config
+│   └── mycobot_bringup/        # Top-level launch files
+├── legacy/                     # Original pymycobot scripts (reference)
+├── pi/                         # Scripts for the Pi (no ROS 2)
+└── scripts/                    # Developer utility scripts
 ```
 
-### X11 forwarding
+## Prerequisites
+
+### Desktop PC
+- Ubuntu 22.04
+- ROS 2 Humble (`sudo apt install ros-humble-desktop`)
+- MoveIt 2 (`sudo apt install ros-humble-moveit`)
+- pymycobot (`pip install pymycobot`)
+- cv_bridge (`sudo apt install ros-humble-cv-bridge`)
+
+### myCobot 280 Pi
+- Factory image (Ubuntu 20.04) -- no changes required
+- Connected to the same network as the Desktop
+- Default IP: `192.168.1.160`, user: `er`, password: `elephant`
+
+## Quick Start
+
+### 1. One-time Pi setup
 
 ```bash
-ssh -Y er@192.168.1.160
-# If not working, on the Pi:
-# sudo nano /etc/ssh/sshd_config -> set X11Forwarding yes
-# sudo systemctl restart ssh
+# From the Desktop, copy setup scripts to the Pi and run them
+scp -r pi/ er@192.168.1.160:~/mycobot_setup/
+ssh er@192.168.1.160 'bash ~/mycobot_setup/setup_pi.sh'
 ```
+
+### 2. Start Pi services
+
+```bash
+ssh er@192.168.1.160 'bash ~/mycobot_setup/start_services.sh'
+# Verify camera: open http://192.168.1.160:8080/?action=stream in a browser
+```
+
+### 3. Build and run (Desktop)
+
+```bash
+source /opt/ros/humble/setup.bash
+cd mycobot_project
+colcon build --symlink-install
+source install/setup.bash
+
+# Visualize the URDF
+ros2 launch mycobot_description display.launch.py
+
+# Connect to robot (driver + gripper + camera)
+ros2 launch mycobot_bringup robot_bringup.launch.py robot_ip:=192.168.1.160
+
+# Full MoveIt2 stack
+ros2 launch mycobot_bringup moveit_bringup.launch.py
+```
+
+## ROS 2 Topics and Services
+
+| Name | Type | Description |
+|------|------|-------------|
+| `/joint_states` | `sensor_msgs/JointState` | Current joint angles (20 Hz) |
+| `/camera/image_raw` | `sensor_msgs/Image` | Camera feed from Pi |
+| `/gripper/set_state` | Service | Open (0) / close (1) gripper |
+| `/gripper/set_value` | Service | Set gripper position 0-100 |
+| `arm_controller/follow_joint_trajectory` | Action | MoveIt2 trajectory execution |
+
+## Future: Isaac Sim Integration
+
+The URDF and ROS 2 topic structure are designed for direct integration with
+NVIDIA Isaac Sim via the ROS 2 bridge for RL/IL workflows.

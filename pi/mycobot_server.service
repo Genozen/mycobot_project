@@ -1,0 +1,13 @@
+[Unit]
+Description=pymycobot TCP Socket Server for myCobot 280 Pi
+After=network.target
+
+[Service]
+Type=simple
+User=er
+ExecStart=/usr/bin/python3 /home/er/pymycobot/demo/Server.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

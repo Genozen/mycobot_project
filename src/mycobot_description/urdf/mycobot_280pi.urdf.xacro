@@ -1,0 +1,200 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mycobot_280pi">
+
+  <xacro:property name="mesh_path" value="package://mycobot_description/meshes"/>
+
+  <!-- Dummy inertial macro (required for Gazebo/MoveIt2) -->
+  <xacro:macro name="default_inertial" params="mass:=0.1">
+    <inertial>
+      <mass value="${mass}"/>
+      <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- ==================== Links ==================== -->
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/G_base.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.03" rpy="0 0 1.5708"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/G_base.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.03" rpy="0 0 1.5708"/>
+    </collision>
+    <xacro:default_inertial mass="0.5"/>
+  </link>
+
+  <link name="link1">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/joint1_pi.dae"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/joint1_pi.dae"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial/>
+  </link>
+
+  <link name="link2">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/joint2.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.06096" rpy="0 0 -1.5708"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/joint2.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.06096" rpy="0 0 -1.5708"/>
+    </collision>
+    <xacro:default_inertial/>
+  </link>
+
+  <link name="link3">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/joint3.dae"/>
+      </geometry>
+      <origin xyz="0 0 0.03256" rpy="0 -1.5708 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/joint3.dae"/>
+      </geometry>
+      <origin xyz="0 0 0.03256" rpy="0 -1.5708 0"/>
+    </collision>
+    <xacro:default_inertial/>
+  </link>
+
+  <link name="link4">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/joint4.dae"/>
+      </geometry>
+      <origin xyz="0 0 0.03056" rpy="0 -1.5708 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/joint4.dae"/>
+      </geometry>
+      <origin xyz="0 0 0.03056" rpy="0 -1.5708 0"/>
+    </collision>
+    <xacro:default_inertial/>
+  </link>
+
+  <link name="link5">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/joint5.dae"/>
+      </geometry>
+      <origin xyz="0 -0.001 -0.0345" rpy="0 -1.5708 1.5708"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/joint5.dae"/>
+      </geometry>
+      <origin xyz="0 -0.001 -0.0345" rpy="0 -1.5708 1.5708"/>
+    </collision>
+    <xacro:default_inertial/>
+  </link>
+
+  <link name="link6">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/joint6.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.038" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/joint6.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.038" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial/>
+  </link>
+
+  <link name="link6_flange">
+    <visual>
+      <geometry>
+        <mesh filename="${mesh_path}/joint7.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.012" rpy="0 0 0"/>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="${mesh_path}/joint7.dae"/>
+      </geometry>
+      <origin xyz="0 0 -0.012" rpy="0 0 0"/>
+    </collision>
+    <xacro:default_inertial mass="0.05"/>
+  </link>
+
+  <!-- ==================== Joints ==================== -->
+
+  <joint name="virtual_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint1" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-2.9321" upper="2.9321" velocity="3.14"/>
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0 0 0.13956" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint2" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-2.4434" upper="2.4434" velocity="3.14"/>
+    <parent link="link2"/>
+    <child link="link3"/>
+    <origin xyz="0 0 -0.001" rpy="0 1.5708 -1.5708"/>
+  </joint>
+
+  <joint name="joint3" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-2.6179" upper="2.6179" velocity="3.14"/>
+    <parent link="link3"/>
+    <child link="link4"/>
+    <origin xyz="-0.1104 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <joint name="joint4" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-2.6179" upper="2.6179" velocity="3.14"/>
+    <parent link="link4"/>
+    <child link="link5"/>
+    <origin xyz="-0.096 0 0.06462" rpy="0 0 -1.5708"/>
+  </joint>
+
+  <joint name="joint5" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-2.7052" upper="2.7925" velocity="3.14"/>
+    <parent link="link5"/>
+    <child link="link6"/>
+    <origin xyz="0 -0.07318 -0.001" rpy="1.5708 -1.5708 0"/>
+  </joint>
+
+  <joint name="joint6" type="revolute">
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" lower="-3.14159" upper="3.14159" velocity="3.14"/>
+    <parent link="link6"/>
+    <child link="link6_flange"/>
+    <origin xyz="0 0.0456 0" rpy="-1.5708 0 0"/>
+  </joint>
+
+</robot>
