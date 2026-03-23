@@ -4,6 +4,9 @@ ROS 2 driver node for myCobot 280 Pi.
 Connects to the robot via pymycobot TCP socket and bridges to ROS 2:
   - Publishes /joint_states at a configurable rate
   - Provides a FollowJointTrajectory action server for MoveIt2 integration
+  - Provides gripper open/close service
+
+Single TCP connection handles both arm and gripper (Server.py only accepts one client).
 """
 
 import math
@@ -16,6 +19,7 @@ from rclpy.action import ActionServer, GoalResponse, CancelResponse
 from rclpy.callback_groups import ReentrantCallbackGroup
 from sensor_msgs.msg import JointState
 from control_msgs.action import FollowJointTrajectory
+from std_srvs.srv import SetBool
 
 from pymycobot import MyCobot280Socket
 
@@ -33,25 +37,32 @@ class MyCobotHardwareNode(Node):
         self.declare_parameter('robot_port', 9000)
         self.declare_parameter('publish_rate', 20.0)
         self.declare_parameter('default_speed', 80)
+        self.declare_parameter('gripper_speed', 80)
 
         ip = self.get_parameter('robot_ip').get_parameter_value().string_value
         port = self.get_parameter('robot_port').get_parameter_value().integer_value
         self._rate = self.get_parameter('publish_rate').get_parameter_value().double_value
         self._speed = self.get_parameter('default_speed').get_parameter_value().integer_value
+        self._gripper_speed = self.get_parameter('gripper_speed').get_parameter_value().integer_value
 
         self.get_logger().info(f'Connecting to myCobot at {ip}:{port}')
         self._mc = MyCobot280Socket(ip, port)
         time.sleep(0.5)
 
-        if self._mc.get_fresh_mode() != 1:
-            self._mc.set_fresh_mode(1)
-            self.get_logger().info('Set fresh mode (responsive movement)')
+        try:
+            if self._mc.get_fresh_mode() != 1:
+                self._mc.set_fresh_mode(1)
+                self.get_logger().info('Set fresh mode (responsive movement)')
+        except Exception as e:
+            self.get_logger().warn(f'Could not set fresh mode: {e}')
 
         self._lock = threading.Lock()
 
+        # Joint state publisher
         self._js_pub = self.create_publisher(JointState, 'joint_states', 10)
         self._timer = self.create_timer(1.0 / self._rate, self._publish_joint_states)
 
+        # Trajectory action server
         cb_group = ReentrantCallbackGroup()
         self._action_server = ActionServer(
             self,
@@ -63,17 +74,25 @@ class MyCobotHardwareNode(Node):
             callback_group=cb_group,
         )
 
-        self.get_logger().info('myCobot hardware node ready')
+        # Gripper service (shared TCP connection)
+        self._gripper_srv = self.create_service(
+            SetBool, 'gripper/set_state', self._gripper_callback
+        )
+
+        self.get_logger().info('myCobot hardware node ready (arm + gripper)')
 
     # ---- Joint State Publisher ----
 
     def _read_angles_rad(self):
         """Read current joint angles from the robot, returns radians or None."""
-        with self._lock:
-            angles_deg = self._mc.get_angles()
-        if not angles_deg or len(angles_deg) != 6:
+        try:
+            with self._lock:
+                angles_deg = self._mc.get_angles()
+            if not isinstance(angles_deg, list) or len(angles_deg) != 6:
+                return None
+            return [math.radians(a) for a in angles_deg]
+        except Exception:
             return None
-        return [math.radians(a) for a in angles_deg]
 
     def _publish_joint_states(self):
         angles = self._read_angles_rad()
@@ -113,10 +132,12 @@ class MyCobotHardwareNode(Node):
 
             angles_deg = [math.degrees(p) for p in point.positions]
 
-            with self._lock:
-                self._mc.send_angles(angles_deg, self._speed)
+            try:
+                with self._lock:
+                    self._mc.send_angles(angles_deg, self._speed)
+            except Exception as e:
+                self.get_logger().error(f'Failed to send angles: {e}')
 
-            # Wait for the scheduled time of this trajectory point
             target_time = start_time + rclpy.duration.Duration(
                 seconds=point.time_from_start.sec,
                 nanoseconds=point.time_from_start.nanosec,
@@ -124,7 +145,6 @@ class MyCobotHardwareNode(Node):
             while self.get_clock().now() < target_time:
                 time.sleep(0.02)
 
-            # Publish feedback
             current_angles = self._read_angles_rad()
             if current_angles:
                 feedback_msg.actual.positions = current_angles
@@ -139,6 +159,24 @@ class MyCobotHardwareNode(Node):
 
         result = FollowJointTrajectory.Result()
         return result
+
+    # ---- Gripper Service ----
+
+    def _gripper_callback(self, request, response):
+        """SetBool: data=True -> close, data=False -> open."""
+        state = 1 if request.data else 0
+        action = 'close' if request.data else 'open'
+        try:
+            with self._lock:
+                self._mc.set_gripper_state(state, self._gripper_speed)
+            response.success = True
+            response.message = f'Gripper {action}'
+            self.get_logger().info(f'Gripper {action}')
+        except Exception as e:
+            response.success = False
+            response.message = str(e)
+            self.get_logger().error(f'Gripper error: {e}')
+        return response
 
 
 def main(args=None):

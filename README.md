@@ -70,6 +70,8 @@ ssh er@192.168.1.169 'bash ~/Documents/robotics_club/mycobot_setup/start_service
 ### 3. Build and run (Desktop)
 
 ```bash
+pip install pymycobot
+
 source /opt/ros/humble/setup.bash
 cd mycobot_project
 colcon build --symlink-install
@@ -77,6 +79,8 @@ source install/setup.bash
 
 # Visualize the URDF
 ros2 launch mycobot_description display.launch.py
+
+ros2 launch mycobot_driver driver.launch.py
 
 # Connect to robot (driver + gripper + camera)
 ros2 launch mycobot_bringup robot_bringup.launch.py robot_ip:=192.168.1.169
