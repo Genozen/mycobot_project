@@ -1,3 +1,14 @@
+"""
+Launch the myCobot 280 Pi hardware driver node.
+
+This single node handles both arm control (joint states + trajectory execution)
+and gripper control via a shared TCP connection to the Pi's pymycobot Server.py.
+
+Usage:
+  ros2 launch mycobot_driver driver.launch.py
+  ros2 launch mycobot_driver driver.launch.py robot_ip:=192.168.1.169 robot_port:=9000
+"""
+
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -26,17 +37,6 @@ def generate_launch_description():
             'robot_port': robot_port,
             'publish_rate': 20.0,
             'default_speed': 80,
-        }],
-        output='screen',
-    )
-
-    gripper_node = Node(
-        package='mycobot_driver',
-        executable='gripper_node',
-        name='gripper_node',
-        parameters=[{
-            'robot_ip': robot_ip,
-            'robot_port': robot_port,
             'gripper_speed': 80,
         }],
         output='screen',
@@ -46,5 +46,4 @@ def generate_launch_description():
         robot_ip_arg,
         robot_port_arg,
         hardware_node,
-        gripper_node,
     ])

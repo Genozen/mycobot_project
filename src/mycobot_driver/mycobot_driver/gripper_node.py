@@ -1,8 +1,12 @@
 """
-ROS 2 node for myCobot 280 Pi gripper control.
+DEPRECATED -- Gripper functionality has been merged into mycobot_hardware_node.py.
 
-Provides services for opening/closing the gripper and setting proportional values.
-Connects to the same pymycobot TCP server as the hardware node.
+This standalone node opened its own TCP connection, but pymycobot Server.py only
+accepts a single client. Running this alongside mycobot_hardware_node caused
+"Broken pipe" errors on whichever node connected second.
+
+Kept in the source tree for reference only. It is no longer registered as a
+console_scripts entry point and is not launched by any launch file.
 """
 
 import time

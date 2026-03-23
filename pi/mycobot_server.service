@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=er
 WorkingDirectory=/home/er
-ExecStart=/usr/bin/python3 /home/er/pymycobot/demo/Server.py
+ExecStart=/usr/bin/python3 /home/er/Documents/robotics_club/mycobot_setup/server.py
 Restart=on-failure
 RestartSec=5
 

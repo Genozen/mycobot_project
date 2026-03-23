@@ -1,7 +1,11 @@
 """
 Full MoveIt2 bringup for myCobot 280 Pi.
 
-Launches: driver + gripper + camera + robot_state_publisher + MoveIt2 move_group + RViz2.
+Launches:
+  - robot_state_publisher (publishes URDF TF tree)
+  - mycobot_hardware_node (arm joint states + trajectory action + gripper service)
+  - move_group (MoveIt2 motion planning)
+  - rviz2 (visualization)
 
 Usage:
   ros2 launch mycobot_bringup moveit_bringup.launch.py
@@ -57,17 +61,7 @@ def generate_launch_description():
             'robot_port': robot_port,
             'publish_rate': 20.0,
             'default_speed': 80,
-        }],
-        output='screen',
-    )
-
-    gripper_node = Node(
-        package='mycobot_driver',
-        executable='gripper_node',
-        name='gripper_node',
-        parameters=[{
-            'robot_ip': robot_ip,
-            'robot_port': robot_port,
+            'gripper_speed': 80,
         }],
         output='screen',
     )
@@ -103,7 +97,6 @@ def generate_launch_description():
         robot_port_arg,
         robot_state_publisher,
         hardware_node,
-        gripper_node,
         move_group_node,
         rviz_node,
     ])

@@ -1,5 +1,10 @@
 """
-Bring up the myCobot 280 Pi driver, gripper, and camera nodes.
+Bring up the myCobot 280 Pi driver and camera nodes.
+
+Launches:
+  - robot_state_publisher (publishes URDF TF tree)
+  - mycobot_hardware_node (arm joint states + trajectory action + gripper service)
+  - camera_node (MJPEG stream -> sensor_msgs/Image)
 
 Usage:
   ros2 launch mycobot_bringup robot_bringup.launch.py
@@ -8,8 +13,7 @@ Usage:
 
 import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
@@ -55,17 +59,6 @@ def generate_launch_description():
             'robot_port': robot_port,
             'publish_rate': 20.0,
             'default_speed': 80,
-        }],
-        output='screen',
-    )
-
-    gripper_node = Node(
-        package='mycobot_driver',
-        executable='gripper_node',
-        name='gripper_node',
-        parameters=[{
-            'robot_ip': robot_ip,
-            'robot_port': robot_port,
             'gripper_speed': 80,
         }],
         output='screen',
@@ -92,6 +85,5 @@ def generate_launch_description():
         camera_port_arg,
         robot_state_publisher,
         hardware_node,
-        gripper_node,
         camera_node,
     ])

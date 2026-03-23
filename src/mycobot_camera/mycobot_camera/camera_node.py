@@ -1,8 +1,12 @@
 """
 ROS 2 camera node for myCobot 280 Pi.
 
-Consumes an MJPEG HTTP stream from mjpg-streamer running on the Pi
-and publishes sensor_msgs/Image on /camera/image_raw.
+Consumes an MJPEG HTTP stream from the Pi's camera_stream.py server
+and republishes it as sensor_msgs/Image on /camera/image_raw plus
+sensor_msgs/CameraInfo on /camera/camera_info.
+
+The Pi runs a lightweight Python MJPEG HTTP server (pi/camera_stream.py)
+on port 8080. This node uses OpenCV VideoCapture to decode the stream.
 """
 
 import cv2

@@ -16,7 +16,7 @@ import threading
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionServer, GoalResponse, CancelResponse
-from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from sensor_msgs.msg import JointState
 from control_msgs.action import FollowJointTrajectory
 from std_srvs.srv import SetBool
@@ -62,8 +62,11 @@ class MyCobotHardwareNode(Node):
         self._js_pub = self.create_publisher(JointState, 'joint_states', 10)
         self._timer = self.create_timer(1.0 / self._rate, self._publish_joint_states)
 
-        # Trajectory action server
-        cb_group = ReentrantCallbackGroup()
+        # Each callback group gets its own thread in MultiThreadedExecutor,
+        # preventing the 20Hz timer from starving the service/action callbacks.
+        action_cb_group = ReentrantCallbackGroup()
+        service_cb_group = MutuallyExclusiveCallbackGroup()
+
         self._action_server = ActionServer(
             self,
             FollowJointTrajectory,
@@ -71,12 +74,12 @@ class MyCobotHardwareNode(Node):
             execute_callback=self._execute_trajectory,
             goal_callback=self._goal_callback,
             cancel_callback=self._cancel_callback,
-            callback_group=cb_group,
+            callback_group=action_cb_group,
         )
 
-        # Gripper service (shared TCP connection)
         self._gripper_srv = self.create_service(
-            SetBool, 'gripper/set_state', self._gripper_callback
+            SetBool, 'gripper/set_state', self._gripper_callback,
+            callback_group=service_cb_group,
         )
 
         self.get_logger().info('myCobot hardware node ready (arm + gripper)')

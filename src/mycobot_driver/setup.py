@@ -19,7 +19,6 @@ setup(
     entry_points={
         'console_scripts': [
             'mycobot_hardware_node = mycobot_driver.mycobot_hardware_node:main',
-            'gripper_node = mycobot_driver.gripper_node:main',
         ],
     },
 )
