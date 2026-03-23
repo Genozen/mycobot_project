@@ -33,14 +33,7 @@ else
     echo "[3/4] mjpg-streamer already installed, skipping."
 fi
 
-# Clone pymycobot if not present (for Server.py)
-PYMYCOBOT_DIR="$HOME/pymycobot"
-if [ ! -d "$PYMYCOBOT_DIR" ]; then
-    echo "[3.5/4] Cloning pymycobot repo for Server.py..."
-    git clone https://github.com/elephantrobotics/pymycobot.git "$PYMYCOBOT_DIR"
-fi
-
-# Install systemd services
+# Install systemd services (server.py is shipped in this directory)
 echo "[4/4] Installing systemd services..."
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

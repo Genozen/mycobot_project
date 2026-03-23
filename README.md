@@ -39,8 +39,9 @@ mycobot_project/               # <-- this is the ROS 2 workspace root
 ├── pi/                        # Scripts & services for the Pi (no ROS 2)
 │   ├── setup_pi.sh            # One-time Pi dependency installer
 │   ├── start_services.sh      # Start arm server + camera stream
+│   ├── server.py              # TCP-to-serial bridge (raw binary, pymycobot 4.x compatible)
 │   ├── camera_stream.py       # Python MJPEG HTTP server (replaces mjpg-streamer)
-│   ├── mycobot_server.service # systemd unit for pymycobot Server.py
+│   ├── mycobot_server.service # systemd unit for server.py
 │   └── mjpg_streamer.service  # systemd unit for camera_stream.py
 └── scripts/                   # Developer utility scripts (sync_to_pi.sh)
 ```
