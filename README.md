@@ -48,7 +48,7 @@ mycobot_project/               # <-- this is the ROS 2 workspace root
 ### myCobot 280 Pi
 - Factory image (Ubuntu 20.04) -- no changes required
 - Connected to the same network as the Desktop
-- Default IP: `192.168.1.160`, user: `er`, password: `elephant`
+- Default IP: `192.168.1.160`, user: <>, password: <>
 
 ## Quick Start
 
