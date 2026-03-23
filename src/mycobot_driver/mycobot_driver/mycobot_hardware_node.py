@@ -117,36 +117,72 @@ class MyCobotHardwareNode(Node):
         self.get_logger().info('Received cancel request')
         return CancelResponse.ACCEPT
 
+    def _wait_until_reached(self, target_deg, tolerance_deg=5.0, timeout=8.0):
+        """Poll joint angles until robot reaches target or timeout."""
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                with self._lock:
+                    current = self._mc.get_angles()
+                if isinstance(current, list) and len(current) == 6:
+                    max_err = max(abs(c - t) for c, t in zip(current, target_deg))
+                    if max_err < tolerance_deg:
+                        return True
+            except Exception:
+                pass
+            time.sleep(0.1)
+        return False
+
     def _execute_trajectory(self, goal_handle):
         trajectory = goal_handle.request.trajectory
         feedback_msg = FollowJointTrajectory.Feedback()
+        points = trajectory.points
+        n = len(points)
+
+        if n == 0:
+            goal_handle.succeed()
+            return FollowJointTrajectory.Result()
+
+        # The first point is the current position — skip it to avoid
+        # the gravity-drop caused by re-commanding the current pose.
+        # For short trajectories just send the final target directly.
+        if n <= 6:
+            waypoint_indices = [n - 1]
+        else:
+            # Pick ~3 intermediate guide points + the final target.
+            # Fewer stops = smoother motion via mid-flight redirection.
+            quarter = n // 4
+            waypoint_indices = [quarter, n // 2, 3 * quarter, n - 1]
 
         self.get_logger().info(
-            f'Executing trajectory with {len(trajectory.points)} points'
+            f'Executing trajectory: {n} points, '
+            f'sending {len(waypoint_indices)} waypoints'
         )
 
-        start_time = self.get_clock().now()
-
-        for i, point in enumerate(trajectory.points):
+        for seq, idx in enumerate(waypoint_indices):
             if goal_handle.is_cancel_requested:
                 goal_handle.canceled()
                 self.get_logger().info('Trajectory canceled')
                 return FollowJointTrajectory.Result()
 
+            point = points[idx]
             angles_deg = [math.degrees(p) for p in point.positions]
+            is_last = (idx == waypoint_indices[-1])
 
             try:
                 with self._lock:
                     self._mc.send_angles(angles_deg, self._speed)
             except Exception as e:
                 self.get_logger().error(f'Failed to send angles: {e}')
+                continue
 
-            target_time = start_time + rclpy.duration.Duration(
-                seconds=point.time_from_start.sec,
-                nanoseconds=point.time_from_start.nanosec,
-            )
-            while self.get_clock().now() < target_time:
-                time.sleep(0.02)
+            if is_last:
+                self._wait_until_reached(angles_deg, tolerance_deg=3.0, timeout=10.0)
+            else:
+                # Minimal delay — just enough for the TCP command to register.
+                # The next send_angles() redirects the arm mid-flight,
+                # creating smooth blended motion instead of stop-and-go.
+                time.sleep(0.15)
 
             current_angles = self._read_angles_rad()
             if current_angles:
