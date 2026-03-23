@@ -31,7 +31,7 @@ Desktop PC (Ubuntu 22.04 / ROS 2 Humble)         myCobot 280 Pi (Ubuntu 20.04)
 mycobot_project/               # <-- this is the ROS 2 workspace root
 ├── src/
 │   ├── mycobot_description/   # URDF, meshes, RViz config
-│   ├── mycobot_driver/        # Arm + gripper control (single node, single TCP conn)
+│   ├── mycobot_driver/        # Arm + gripper control + pose recorder
 │   ├── mycobot_camera/        # Camera stream consumer (MJPEG -> ROS 2 Image)
 │   ├── mycobot_moveit_config/ # MoveIt2 planning config (SRDF, kinematics, OMPL)
 │   └── mycobot_bringup/       # Top-level launch files
@@ -102,6 +102,59 @@ ros2 launch mycobot_bringup robot_bringup.launch.py
 # Full MoveIt2 stack (driver + move_group + RViz2)
 ros2 launch mycobot_bringup moveit_bringup.launch.py
 ```
+
+## Collision Obstacles
+
+The planner avoids physical obstacles (table, walls) defined in
+`src/mycobot_moveit_config/config/obstacles.yaml`.
+They are automatically loaded when the MoveIt2 stack launches and
+appear as green shapes in RViz2.
+
+Edit the YAML to match your physical setup — dimensions are in metres,
+positions are in the `world` frame (robot mount point at origin, Z up):
+
+```yaml
+obstacles:
+  - name: table
+    type: box
+    dimensions: [1.0, 1.0, 0.02]   # [x, y, z] size
+    position: [0.0, 0.0, -0.45]    # 45cm below mount
+    orientation: [0.0, 0.0, 0.0]   # [roll, pitch, yaw]
+```
+
+After editing, rebuild and re-source:
+```bash
+colcon build --packages-select mycobot_moveit_config
+source install/setup.bash
+```
+
+## Recording Named Poses (Teach Mode)
+
+Record the robot's current position as a named pose for MoveIt2.
+Use RViz2 to move the arm to a desired position, then capture it:
+
+```bash
+# Terminal 1: Launch the full MoveIt2 stack
+ros2 launch mycobot_bringup moveit_bringup.launch.py
+
+# Terminal 2: Start the pose recorder
+ros2 run mycobot_driver teach_poses
+```
+
+In the recorder terminal:
+1. In RViz2, drag the interactive marker and click **Plan & Execute** to move the arm.
+2. Once the arm reaches the desired pose, press **Enter** in the recorder terminal.
+3. Type a name for the pose (e.g. `pick`, `place`, `inspect`).
+4. Repeat for more poses, or type `done` to finish.
+5. Rebuild the config package so MoveIt2 loads the new poses:
+
+```bash
+colcon build --packages-select mycobot_moveit_config
+source install/setup.bash
+```
+
+Recorded poses are saved as `<group_state>` entries in the SRDF source file
+and appear in the **Goal State** dropdown in RViz2's MotionPlanning panel.
 
 ## ROS 2 Topics and Services
 

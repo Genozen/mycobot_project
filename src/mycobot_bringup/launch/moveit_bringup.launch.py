@@ -116,6 +116,16 @@ def generate_launch_description():
         ],
     )
 
+    obstacles_file = os.path.join(moveit_dir, 'config', 'obstacles.yaml')
+
+    scene_objects_node = Node(
+        package='mycobot_driver',
+        executable='scene_objects',
+        name='scene_objects',
+        parameters=[{'obstacles_file': obstacles_file}],
+        output='screen',
+    )
+
     rviz_config = os.path.join(moveit_dir, 'rviz', 'moveit.rviz')
 
     rviz_node = Node(
@@ -141,5 +151,6 @@ def generate_launch_description():
         hardware_node,
         camera_node,
         move_group_node,
+        scene_objects_node,
         rviz_node,
     ])

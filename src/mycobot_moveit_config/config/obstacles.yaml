@@ -1,0 +1,23 @@
+# Planning scene obstacles for myCobot 280 Pi.
+#
+# The robot is mounted upside-down at the world origin (0,0,0).
+# In the world frame, Z points up and the arm hangs downward (-Z).
+# The myCobot 280 Pi has ~280mm (0.28m) reach.
+#
+# Edit dimensions/positions to match your physical setup, then restart
+# the MoveIt2 launch to reload.
+
+frame_id: world
+
+obstacles:
+  - name: table
+    type: box
+    dimensions: [1.0, 1.0, 0.02]    # [x, y, z] size in meters
+    position: [0.0, 0.0, -0.43]     # surface ~45cm below mount point
+    orientation: [0.0, 0.0, 0.0]    # [roll, pitch, yaw] in radians
+
+  - name: back_wall
+    type: box
+    dimensions: [0.02, 1.0, 1.0]
+    position: [0.0, 0.13, 0.0]     # 25cm behind the robot
+    orientation: [0.0, 0.0, 1.5708]

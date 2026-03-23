@@ -3,9 +3,10 @@ Panels:
     Help Height: 70
     Name: Displays
     Property Tree Widget:
-      Expanded: ~
+      Expanded:
+        - /TF1
       Splitter Ratio: 0.5
-    Tree Height: 85
+    Tree Height: 206
   - Class: rviz_common/Views
     Expanded:
       - /Current View1
@@ -18,22 +19,24 @@ Visualization Manager:
       Enabled: true
       Frame Timeout: 15
       Frames:
-        All Enabled: true
+        All Enabled: false
         base_link:
-          Value: true
+          Value: false
         link1:
-          Value: true
+          Value: false
         link2:
-          Value: true
+          Value: false
         link3:
-          Value: true
+          Value: false
         link4:
-          Value: true
+          Value: false
         link5:
-          Value: true
+          Value: false
         link6:
-          Value: true
+          Value: false
         link6_flange:
+          Value: false
+        world:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -41,15 +44,16 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        base_link:
-          link1:
-            link2:
-              link3:
-                link4:
-                  link5:
-                    link6:
-                      link6_flange:
-                        {}
+        world:
+          base_link:
+            link1:
+              link2:
+                link3:
+                  link4:
+                    link5:
+                      link6:
+                        link6_flange:
+                          {}
       Update Interval: 0
       Value: true
     - Alpha: 0.800000011920929
@@ -110,6 +114,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        world:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
       Mass Properties:
         Inertia: false
         Mass: false
@@ -189,6 +197,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
         Loop Animation: false
         Robot Alpha: 0.5
         Robot Color: 150; 250; 150
@@ -275,6 +287,10 @@ Visualization Manager:
             Show Axes: false
             Show Trail: false
             Value: true
+          world:
+            Alpha: 1
+            Show Axes: false
+            Show Trail: false
         Robot Alpha: 0.5
         Show Robot Collision: false
         Show Robot Visual: true
@@ -297,7 +313,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: base_link
+    Fixed Frame: world
     Frame Rate: 30
   Name: root
   Tools:
@@ -319,18 +335,18 @@ Visualization Manager:
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0
-        Y: 0
-        Z: 0.15000000596046448
+        X: 0.02025393396615982
+        Y: -0.06795208901166916
+        Z: -0.07756559550762177
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.02479705959558487
+      Pitch: -0.05020296201109886
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 0.20999400317668915
+      Yaw: 5.198182582855225
     Saved: ~
 Window Geometry:
   CameraFeed:
@@ -344,7 +360,7 @@ Window Geometry:
     collapsed: false
   MotionPlanning - Trajectory Slider:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd0000000200000000000002b40000032ffc0200000004fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000003d0000019a0000017d00fffffffb000000100044006900730070006c00610079007301000001dd000000d8000000c900fffffffb0000000a0056006900650077007301000002bb000000b1000000a400ffffff00000001000001400000032ffc0200000001fb0000001400430061006d0065007200610046006500650064010000003d0000032f0000002800ffffff000003af0000032f00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000200000000000002b40000032ffc0200000003fb00000044004d006f00740069006f006e0050006c0061006e006e0069006e00670020002d0020005400720061006a006500630074006f0072007900200053006c00690064006500720000000000ffffffff0000004100fffffffb0000001c004d006f00740069006f006e0050006c0061006e006e0069006e0067010000003d000001d80000017d00fffffffb000000100044006900730070006c006100790073010000021b00000151000000c900ffffff00000001000001400000032ffc0200000002fb0000000a00560069006500770073010000003d000000b7000000a400fffffffb0000001400430061006d006500720061004600650065006401000000fa000002720000002800ffffff000003af0000032f00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Views:
     collapsed: false
   Width: 1967

@@ -19,6 +19,8 @@ setup(
     entry_points={
         'console_scripts': [
             'mycobot_hardware_node = mycobot_driver.mycobot_hardware_node:main',
+            'teach_poses = mycobot_driver.teach_poses:main',
+            'scene_objects = mycobot_driver.scene_objects:main',
         ],
     },
 )

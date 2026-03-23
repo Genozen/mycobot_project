@@ -11,7 +11,23 @@
     </inertial>
   </xacro:macro>
 
+  <!-- Set to true when the robot is physically mounted upside-down -->
+  <xacro:arg name="flipped" default="true"/>
+
   <!-- ==================== Links ==================== -->
+
+  <link name="world"/>
+
+  <joint name="world_to_base" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <xacro:if value="$(arg flipped)">
+      <origin xyz="0 0 0" rpy="3.14159 0 0"/>
+    </xacro:if>
+    <xacro:unless value="$(arg flipped)">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:unless>
+  </joint>
 
   <link name="base_link">
     <visual>

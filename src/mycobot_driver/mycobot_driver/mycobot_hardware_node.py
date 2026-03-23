@@ -4,7 +4,7 @@ ROS 2 driver node for myCobot 280 Pi.
 Connects to the robot via pymycobot TCP socket and bridges to ROS 2:
   - Publishes /joint_states at a configurable rate
   - Provides a FollowJointTrajectory action server for MoveIt2 integration
-  - Provides gripper open/close service
+  - Provides gripper open/close via /gripper/set_state (SetBool)
 
 Single TCP connection handles both arm and gripper (Server.py only accepts one client).
 """
