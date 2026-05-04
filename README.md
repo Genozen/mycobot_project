@@ -20,6 +20,9 @@ Desktop PC (Ubuntu 22.04 / ROS 2 Humble)         myCobot 280 Pi (Ubuntu 20.04)
 │    └── /gripper/set_state            │         │    └── /dev/video0 ──► Cam   │
 │  camera_node ──── HTTP :8080 ────────┼────────►│                              │
 │    └── /camera/image_raw             │         └──────────────────────────────┘
+│  food_detector_node (YOLO-World)     │
+│    ├── /perception/food_detections   │
+│    └── /perception/food_detections/image
 │  robot_state_publisher               │
 │  RViz2                               │
 └──────────────────────────────────────┘
@@ -33,6 +36,7 @@ mycobot_project/               # <-- this is the ROS 2 workspace root
 │   ├── mycobot_description/   # URDF (arm + camera + gripper), meshes, RViz config
 │   ├── mycobot_driver/        # Arm + gripper control + pose recorder
 │   ├── mycobot_camera/        # Camera stream consumer (MJPEG -> ROS 2 Image)
+│   ├── mycobot_perception/    # YOLOv11 food detection (CV2 window + ROS 2 topics)
 │   ├── mycobot_moveit_config/ # MoveIt2 planning config (SRDF, kinematics, OMPL)
 │   └── mycobot_bringup/       # Top-level launch files
 ├── legacy/                    # Original pymycobot scripts (reference)
@@ -54,6 +58,8 @@ mycobot_project/               # <-- this is the ROS 2 workspace root
 - MoveIt 2 (`sudo apt install ros-humble-moveit`)
 - pymycobot (`pip install pymycobot`)
 - cv_bridge (`sudo apt install ros-humble-cv-bridge`)
+- vision_msgs (`sudo apt install ros-humble-vision-msgs`)
+- ultralytics (`pip install ultralytics`) — only needed for `mycobot_perception`
 
 ### myCobot 280 Pi
 - Factory image (Ubuntu 20.04) -- no changes required
@@ -156,6 +162,80 @@ source install/setup.bash
 Recorded poses are saved as `<group_state>` entries in the SRDF source file
 and appear in the **Goal State** dropdown in RViz2's MotionPlanning panel.
 
+## Food Detection
+
+Two modes, one node:
+
+| Mode | Model | When to use |
+|------|-------|-------------|
+| **Open-vocabulary (default)** | YOLO-World v2 (~50 MB) | Detect arbitrary foods you list (e.g. `strawberry`, `ketchup bottle`) without retraining. |
+| **COCO** | YOLOv11n (~6 MB) | Fastest. Limited to 10 COCO food classes (banana, apple, sandwich, orange, broccoli, carrot, hot dog, pizza, donut, cake). |
+
+### One-time setup
+```bash
+pip install ultralytics                          # downloads torch deps (~2 GB)
+sudo apt install ros-humble-vision-msgs          # for Detection2DArray
+cd mycobot_project
+colcon build --packages-select mycobot_perception
+source install/setup.bash
+```
+
+### Run it — no parameters needed
+```bash
+# Terminal 1: launch the camera (or the full MoveIt2 stack)
+ros2 launch mycobot_bringup moveit_bringup.launch.py
+
+# Terminal 2: launch the food detector. That's it.
+ros2 launch mycobot_perception food_detector.launch.py
+```
+
+By default the node automatically:
+- subscribes to `/camera/image_raw`
+- loads YOLO-World v2 (`yolov8s-worldv2.pt`, auto-downloads ~50 MB on first run)
+- detects this kitchen-friendly vocabulary out of the box:
+  > broccoli, carrot, tomato, lettuce, bell pepper, cucumber,
+  > apple, banana, orange, strawberry, grape, lemon,
+  > pizza, french fries, ketchup bottle,
+  > egg, bread, milk carton, cookie, cheese
+- pops up a CV2 window with bounding boxes
+- publishes `/perception/food_detections` (`vision_msgs/Detection2DArray`)
+  and `/perception/food_detections/image` (annotated frame)
+
+### Common overrides
+
+```bash
+# Custom vocabulary (open-vocab mode)
+ros2 launch mycobot_perception food_detector.launch.py \
+  vocabulary:='["strawberry","blueberry","raspberry"]'
+
+# Switch to fast COCO mode (no YOLO-World)
+ros2 launch mycobot_perception food_detector.launch.py vocabulary:='[]'
+
+# Headless (no CV2 window, just publish topics)
+ros2 launch mycobot_perception food_detector.launch.py show_window:=false
+
+# Lower threshold if YOLO-World is missing items (default 0.1)
+ros2 launch mycobot_perception food_detector.launch.py confidence_threshold:=0.05
+
+# Custom-trained .pt model
+ros2 launch mycobot_perception food_detector.launch.py \
+  model_path:=/abs/path/my_food.pt vocabulary:='[]'
+```
+
+### Tips for tuning YOLO-World
+
+YOLO-World matches your text prompts against image regions via CLIP, so
+the wording of your vocabulary matters:
+
+- **Use concrete, common nouns**: `"strawberry"` works much better than
+  `"berry"` or `"red fruit"`.
+- **Include the object type**: `"milk carton"` >> `"milk"` (since "milk"
+  is a substance, not a visible object).
+- **Keep the list under ~30 items**; accuracy degrades when the
+  vocabulary is huge.
+- **Default confidence is `0.1`** because YOLO-World scores are typically
+  lower than COCO YOLO. Increase if you get false positives.
+
 ## ROS 2 Topics and Services
 
 | Name | Type | Description |
@@ -163,6 +243,8 @@ and appear in the **Goal State** dropdown in RViz2's MotionPlanning panel.
 | `/joint_states` | `sensor_msgs/JointState` | Current joint angles (20 Hz) |
 | `/camera/image_raw` | `sensor_msgs/Image` | Camera feed from Pi |
 | `/camera/camera_info` | `sensor_msgs/CameraInfo` | Camera metadata |
+| `/perception/food_detections/image` | `sensor_msgs/Image` | YOLO-annotated frame (RViz2-friendly) |
+| `/perception/food_detections` | `vision_msgs/Detection2DArray` | Structured bbox + class + score per food item |
 | `/gripper/set_state` | `std_srvs/SetBool` | Open (`false`) / close (`true`) gripper |
 | `arm_controller/follow_joint_trajectory` | Action (`FollowJointTrajectory`) | MoveIt2 trajectory execution |
 
@@ -185,6 +267,18 @@ and appear in the **Goal State** dropdown in RViz2's MotionPlanning panel.
 | `camera_url` | `http://192.168.1.169:8080/?action=stream` | MJPEG stream URL |
 | `frame_rate` | `30.0` | Capture rate (Hz) |
 | `frame_id` | `camera_link` | TF frame for camera images |
+
+### food_detector_node
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `image_topic` | `/camera/image_raw` | Input image topic |
+| `model_path` | `yolo11n.pt` | Ultralytics model. Auto-switches to `yolov8s-worldv2.pt` when `vocabulary` is non-empty. |
+| `confidence_threshold` | `0.1` (launch) / `0.4` (node) | Min score to keep a detection. Lower default in launch is tuned for YOLO-World. |
+| `vocabulary` | (kitchen list, see launch file) | Open-vocab class names for YOLO-World. `[]` = COCO mode. |
+| `food_class_ids` | COCO food IDs (46–55) | COCO class IDs to keep when in COCO mode. `[]` = keep all. Ignored in open-vocab mode. |
+| `show_window` | `true` | Show CV2 preview window |
+| `device` | `cpu` | `cpu`, `0`, `cuda:0`, etc. |
 
 ## Future: Isaac Sim Integration
 
