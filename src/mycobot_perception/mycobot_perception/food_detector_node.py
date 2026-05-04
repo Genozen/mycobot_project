@@ -38,9 +38,9 @@ import numpy as np
 
 import rclpy
 from rclpy.node import Node
+from rclpy.parameter import Parameter
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
-
-from rcl_interfaces.msg import ParameterDescriptor, ParameterType
+from rclpy.exceptions import ParameterUninitializedException
 
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
@@ -73,28 +73,15 @@ class FoodDetectorNode(Node):
         self.declare_parameter('image_topic', '/camera/image_raw')
         self.declare_parameter('model_path', 'yolo11n.pt')
         self.declare_parameter('confidence_threshold', 0.4)
-        # Explicitly type as INTEGER_ARRAY so an empty list `[]` from CLI
-        # ('-p food_class_ids:=[]') stays typed and doesn't become uninitialized.
-        self.declare_parameter(
-            'food_class_ids',
-            COCO_FOOD_CLASS_IDS,
-            ParameterDescriptor(
-                type=ParameterType.PARAMETER_INTEGER_ARRAY,
-                description='COCO class IDs to keep. Empty list = keep all detections. '
-                            'Ignored when `vocabulary` is non-empty.',
-            ),
-        )
-        # Same trick as above: empty STRING_ARRAY defaults silently lose type.
-        self.declare_parameter(
-            'vocabulary',
-            [],
-            ParameterDescriptor(
-                type=ParameterType.PARAMETER_STRING_ARRAY,
-                description='Open-vocabulary class names for YOLO-World '
-                            '(e.g. ["strawberry", "ketchup bottle"]). '
-                            'Empty = use COCO model + food_class_ids filter.',
-            ),
-        )
+        # Type-only declarations for array parameters:
+        # `declare_parameter(name, value, descriptor)` in rclpy Humble lets the
+        # *value*'s inferred type win over the descriptor. An empty Python list
+        # `[]` is inferred as BYTE_ARRAY -- which then rejects any
+        # STRING_ARRAY/INTEGER_ARRAY override from launch/CLI.
+        # `Parameter.Type.X` declares the type with NO default, bypassing
+        # value-inference entirely. We supply our own defaults below in code.
+        self.declare_parameter('food_class_ids', Parameter.Type.INTEGER_ARRAY)
+        self.declare_parameter('vocabulary', Parameter.Type.STRING_ARRAY)
         self.declare_parameter('show_window', True)
         self.declare_parameter('window_name', 'Food Detection')
         self.declare_parameter('device', 'cpu')
@@ -102,11 +89,13 @@ class FoodDetectorNode(Node):
         image_topic = self.get_parameter('image_topic').get_parameter_value().string_value
         model_path = self.get_parameter('model_path').get_parameter_value().string_value
         self._conf = self.get_parameter('confidence_threshold').get_parameter_value().double_value
+        # Type-only declarations are "uninitialized" until something sets them.
+        # No override -> use sensible defaults.
         self._food_ids = set(
-            self.get_parameter('food_class_ids').get_parameter_value().integer_array_value
+            self._get_array_param('food_class_ids', 'integer_array_value', COCO_FOOD_CLASS_IDS)
         )
         vocabulary = list(
-            self.get_parameter('vocabulary').get_parameter_value().string_array_value
+            self._get_array_param('vocabulary', 'string_array_value', [])
         )
         self._show_window = self.get_parameter('show_window').get_parameter_value().bool_value
         self._window_name = self.get_parameter('window_name').get_parameter_value().string_value
@@ -171,6 +160,20 @@ class FoodDetectorNode(Node):
         )
 
         self.get_logger().info(f'Subscribed to {image_topic}, ready for inference')
+
+    def _get_array_param(self, name: str, value_field: str, default):
+        """Read an array parameter, returning `default` if uninitialized.
+
+        Used with type-only declarations (Parameter.Type.X) where rclpy
+        won't assign a default value. This keeps `ros2 run` (no args) and
+        `ros2 launch` (always overrides) both working with the same code.
+        """
+        try:
+            return getattr(
+                self.get_parameter(name).get_parameter_value(), value_field,
+            )
+        except ParameterUninitializedException:
+            return default
 
     def _image_cb(self, msg: Image) -> None:
         try:
@@ -256,8 +259,11 @@ class FoodDetectorNode(Node):
     ) -> Detection2D:
         det = Detection2D()
         det.header = header
-        det.bbox.center.x = float((x1 + x2) / 2.0)
-        det.bbox.center.y = float((y1 + y2) / 2.0)
+        # vision_msgs 4.x: BoundingBox2D.center is a vision_msgs/Pose2D where
+        # x/y live inside a nested Point2D `position` field (NOT directly on
+        # the Pose2D like the older geometry_msgs/Pose2D layout).
+        det.bbox.center.position.x = float((x1 + x2) / 2.0)
+        det.bbox.center.position.y = float((y1 + y2) / 2.0)
         det.bbox.center.theta = 0.0
         det.bbox.size_x = float(x2 - x1)
         det.bbox.size_y = float(y2 - y1)

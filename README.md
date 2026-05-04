@@ -173,12 +173,18 @@ Two modes, one node:
 
 ### One-time setup
 ```bash
-pip install ultralytics                          # downloads torch deps (~2 GB)
-sudo apt install ros-humble-vision-msgs          # for Detection2DArray
+pip install ultralytics                              # downloads torch deps (~2 GB)
+pip install ftfy regex git+https://github.com/ultralytics/CLIP.git  # for YOLO-World text encoder
+sudo apt install ros-humble-vision-msgs              # for Detection2DArray
 cd mycobot_project
 colcon build --packages-select mycobot_perception
 source install/setup.bash
 ```
+
+> The `clip` package is only required for **open-vocabulary mode** (YOLO-World).
+> If you only ever use COCO mode (`vocabulary:='[]'`), you can skip installing it.
+> Ultralytics will try to auto-install CLIP on first use, but the manual command
+> above is more reliable (avoids `sudo` / venv permission issues).
 
 ### Run it — no parameters needed
 ```bash
@@ -235,6 +241,18 @@ the wording of your vocabulary matters:
   vocabulary is huge.
 - **Default confidence is `0.1`** because YOLO-World scores are typically
   lower than COCO YOLO. Increase if you get false positives.
+
+### Common errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `ModuleNotFoundError: No module named 'clip'` | YOLO-World needs OpenAI CLIP for text encoding | `pip install ftfy regex git+https://github.com/ultralytics/CLIP.git` |
+| `ModuleNotFoundError: No module named 'ultralytics'` | Missing main dep | `pip install ultralytics` |
+| `Trying to set parameter 'X' ... expecting type 'BYTE_ARRAY'` | rclpy bug — empty list defaults infer as BYTE_ARRAY | Already fixed in this node via `Parameter.Type.X` declarations |
+| CV2 window blank/grey but no errors | Camera node not publishing yet | `ros2 topic hz /camera/image_raw` should print ~30 Hz |
+| First inference takes ~30 s | YOLO-World downloads model + CLIP weights | Normal; subsequent runs are instant |
+| Many false positives | YOLO-World scores food-shaped non-food | Raise `confidence_threshold:=0.2` or remove ambiguous vocab terms |
+| `'Pose2D' object has no attribute 'x'` | vision_msgs 4.x changed `BoundingBox2D.center` to nest x/y inside `.position` | Use `det.bbox.center.position.x/.y` (already fixed in this node) |
 
 ## ROS 2 Topics and Services
 
