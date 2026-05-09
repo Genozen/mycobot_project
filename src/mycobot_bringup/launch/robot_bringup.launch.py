@@ -31,10 +31,18 @@ def generate_launch_description():
     camera_port_arg = DeclareLaunchArgument(
         'camera_port', default_value='8080',
     )
+    gripper_open_arg = DeclareLaunchArgument(
+        'gripper_open_value', default_value='100',
+    )
+    gripper_closed_arg = DeclareLaunchArgument(
+        'gripper_closed_value', default_value='0',
+    )
 
     robot_ip = LaunchConfiguration('robot_ip')
     robot_port = LaunchConfiguration('robot_port')
     camera_port = LaunchConfiguration('camera_port')
+    gripper_open_value = LaunchConfiguration('gripper_open_value')
+    gripper_closed_value = LaunchConfiguration('gripper_closed_value')
 
     description_dir = get_package_share_directory('mycobot_description')
     xacro_file = os.path.join(description_dir, 'urdf', 'mycobot_280pi.urdf.xacro')
@@ -60,6 +68,8 @@ def generate_launch_description():
             'publish_rate': 20.0,
             'default_speed': 80,
             'gripper_speed': 80,
+            'gripper_open_value': gripper_open_value,
+            'gripper_closed_value': gripper_closed_value,
         }],
         output='screen',
     )
@@ -83,6 +93,8 @@ def generate_launch_description():
         robot_ip_arg,
         robot_port_arg,
         camera_port_arg,
+        gripper_open_arg,
+        gripper_closed_arg,
         robot_state_publisher,
         hardware_node,
         camera_node,

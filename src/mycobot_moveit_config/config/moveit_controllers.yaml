@@ -3,6 +3,7 @@ moveit_controller_manager: moveit_simple_controller_manager/MoveItSimpleControll
 moveit_simple_controller_manager:
   controller_names:
     - arm_controller
+    - gripper_controller
 
   arm_controller:
     type: FollowJointTrajectory
@@ -15,3 +16,13 @@ moveit_simple_controller_manager:
       - joint4
       - joint5
       - joint6
+
+  # GripperCommand controller. moveit_simple_controller_manager builds the
+  # full action name as "<controller_name>/<action_ns>", so this matches
+  # the action server in mycobot_hardware_node at /gripper_controller/gripper_cmd.
+  gripper_controller:
+    type: GripperCommand
+    action_ns: gripper_cmd
+    default: true
+    joints:
+      - gripper_finger_joint

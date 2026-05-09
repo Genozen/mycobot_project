@@ -109,6 +109,53 @@ ros2 launch mycobot_bringup robot_bringup.launch.py
 ros2 launch mycobot_bringup moveit_bringup.launch.py
 ```
 
+## Controlling the Gripper in MoveIt2
+
+The gripper is exposed as a separate MoveIt planning group called `gripper`,
+with two named states (`open`, `closed`). It uses the binary myCobot adaptive
+gripper under the hood — the URDF joint range `[0.0, 0.5]` rad is symbolic
+and gets thresholded at the midpoint to decide open vs close.
+
+In RViz2 (after `ros2 launch mycobot_bringup moveit_bringup.launch.py`):
+
+1. Open the **MotionPlanning** panel.
+2. **Planning** tab → **Planning Group** dropdown → select **gripper**.
+3. **Goal State** dropdown → pick **open** or **closed**.
+4. Click **Plan & Execute**. The real gripper actuates and the URDF visual
+   updates via `/joint_states`.
+
+From the command line (bypassing RViz):
+
+```bash
+# Open
+ros2 action send_goal /gripper_controller/gripper_cmd \
+  control_msgs/action/GripperCommand "{command: {position: 0.5, max_effort: 0.0}}"
+
+# Close
+ros2 action send_goal /gripper_controller/gripper_cmd \
+  control_msgs/action/GripperCommand "{command: {position: 0.0, max_effort: 0.0}}"
+```
+
+The legacy `/gripper/set_state` (`SetBool`) service is still available for
+quick scripts and teleop:
+
+```bash
+ros2 service call /gripper/set_state std_srvs/srv/SetBool "{data: true}"   # close
+ros2 service call /gripper/set_state std_srvs/srv/SetBool "{data: false}"  # open
+```
+
+### If "open" and "close" are swapped on your hardware
+
+Defaults are tuned for this 280 Pi's firmware, which is **inverted** from the
+official Elephant Robotics docs: `set_gripper_value(100)` opens, `(0)` closes.
+If you swap to a docs-compliant gripper, flip the two parameters at launch time
+— no rebuild needed:
+
+```bash
+ros2 launch mycobot_bringup moveit_bringup.launch.py \
+  gripper_open_value:=0 gripper_closed_value:=100
+```
+
 ## Collision Obstacles
 
 The planner avoids physical obstacles (table, walls) defined in
@@ -263,8 +310,9 @@ the wording of your vocabulary matters:
 | `/camera/camera_info` | `sensor_msgs/CameraInfo` | Camera metadata |
 | `/perception/food_detections/image` | `sensor_msgs/Image` | YOLO-annotated frame (RViz2-friendly) |
 | `/perception/food_detections` | `vision_msgs/Detection2DArray` | Structured bbox + class + score per food item |
-| `/gripper/set_state` | `std_srvs/SetBool` | Open (`false`) / close (`true`) gripper |
-| `arm_controller/follow_joint_trajectory` | Action (`FollowJointTrajectory`) | MoveIt2 trajectory execution |
+| `/gripper/set_state` | `std_srvs/SetBool` | Open (`false`) / close (`true`) gripper (scripts/CLI) |
+| `arm_controller/follow_joint_trajectory` | Action (`FollowJointTrajectory`) | MoveIt2 arm trajectory execution |
+| `gripper_controller/gripper_cmd` | Action (`GripperCommand`) | MoveIt2 gripper open/close (binary thresholded) |
 
 ## Node Parameters
 
@@ -277,6 +325,8 @@ the wording of your vocabulary matters:
 | `publish_rate` | `20.0` | Joint state publish rate (Hz) |
 | `default_speed` | `80` | Arm movement speed (0-100) |
 | `gripper_speed` | `80` | Gripper open/close speed (0-100) |
+| `gripper_open_value` | `100` | pymycobot value sent for "open". Defaults match this 280 Pi's firmware (inverted from the official docs). |
+| `gripper_closed_value` | `0` | pymycobot value sent for "closed". Swap with `gripper_open_value` if your gripper is docs-compliant. |
 
 ### camera_node
 

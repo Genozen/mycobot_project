@@ -3,6 +3,18 @@
   <group name="arm">
     <chain base_link="base_link" tip_link="link6_flange"/>
   </group>
+  <group name="gripper">
+    <joint name="gripper_finger_joint"/>
+  </group>
+  <end_effector name="adaptive_gripper" parent_link="link6_flange" group="gripper" parent_group="arm"/>
+  <!-- gripper_left3 mesh visually shows OPEN at joint=0 and CLOSED at joint=0.5
+       (mesh-relative). Hardware mapping in mycobot_hardware_node matches. -->
+  <group_state name="open" group="gripper">
+    <joint name="gripper_finger_joint" value="0.0"/>
+  </group_state>
+  <group_state name="closed" group="gripper">
+    <joint name="gripper_finger_joint" value="0.5"/>
+  </group_state>
   <group_state name="home" group="arm">
     <joint name="joint1" value="0.0"/>
     <joint name="joint2" value="0.0"/>

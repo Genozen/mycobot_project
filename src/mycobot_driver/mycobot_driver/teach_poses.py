@@ -60,8 +60,13 @@ class TeachPoseNode(Node):
         )
 
     def _js_cb(self, msg: JointState):
-        if len(msg.position) == 6:
-            self._latest_js = list(msg.position)
+        # Filter by name so we ignore non-arm joints (e.g. gripper_finger_joint).
+        try:
+            name_to_pos = dict(zip(msg.name, msg.position))
+            arm = [name_to_pos[n] for n in JOINT_NAMES]
+        except KeyError:
+            return
+        self._latest_js = arm
 
     def get_current_pose(self) -> list | None:
         """Spin briefly and return the latest joint positions in radians."""

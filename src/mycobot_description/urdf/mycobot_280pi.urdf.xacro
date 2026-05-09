@@ -376,11 +376,16 @@
     <origin xyz="0 0.065 0" rpy="0 -1.5708 0"/>
   </joint>
 
-  <!-- Gripper finger joints (fixed — visual only, controlled via pymycobot) -->
-  <joint name="gripper_controller" type="fixed">
+  <!-- Driving finger joint: revolute so MoveIt has a DOF to plan over.
+       Joint position is linearly mapped in the hardware node to
+       pymycobot set_gripper_value(0..100). Only gripper_left3 visually
+       swings; the remaining finger links remain fixed (cosmetic only). -->
+  <joint name="gripper_finger_joint" type="revolute">
     <parent link="gripper_base"/>
     <child link="gripper_left3"/>
     <origin xyz="-0.012 0.005 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10.0" lower="0.0" upper="0.5" velocity="1.0"/>
   </joint>
 
   <joint name="gripper_base_to_gripper_left2" type="fixed">
