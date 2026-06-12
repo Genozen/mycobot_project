@@ -1,7 +1,10 @@
 6/12/2026 update:
 Keeping the most current code in the other branch under `tcp_remote_mycobot`
 
-YouTube: https://www.youtube.com/watch?v=C2TYpbpt0QM
+YouTube Video:
+part 1: https://www.youtube.com/watch?v=Jq-79XXTvu4
+part 2: https://youtu.be/tcKRBKju4v4?si=bxCKUUZKw8PSfLP4
+part 3: https://www.youtube.com/watch?v=C2TYpbpt0QM
 
 
 ## Full Project Demo:
