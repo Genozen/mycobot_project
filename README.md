@@ -1,5 +1,7 @@
 YouTube Video:
-https://www.youtube.com/watch?v=C2TYpbpt0QM
+part 1: https://www.youtube.com/watch?v=Jq-79XXTvu4
+part 2: https://youtu.be/tcKRBKju4v4?si=bxCKUUZKw8PSfLP4
+part 3: https://www.youtube.com/watch?v=C2TYpbpt0QM
 
 # myCobot 280 Pi -- ROS 2 Workspace
 
