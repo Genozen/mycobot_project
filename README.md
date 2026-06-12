@@ -1,3 +1,6 @@
+YouTube Video:
+https://www.youtube.com/watch?v=C2TYpbpt0QM
+
 # myCobot 280 Pi -- ROS 2 Workspace
 
 Remote-control a myCobot 280 Pi over the network from a Desktop PC using ROS 2 Humble and MoveIt2.
